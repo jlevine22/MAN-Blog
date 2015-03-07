@@ -4,9 +4,11 @@ var fs = require('fs');
 var async = require('async');
 var Loki = require('lokijs');
 
+var postsDirectory = process.env.MANLY_POSTS_DIR || './posts';
+
 var app = express();
 app.use(express.static('./public'));
-app.use('/posts', express.static('./posts'));
+app.use('/posts', express.static(postsDirectory));
 
 function getPaths(rootPath) {
 	var paths = [];
@@ -24,7 +26,7 @@ function getPaths(rootPath) {
 	return paths;
 }
 
-var rootPath = fs.realpathSync('./posts');
+var rootPath = fs.realpathSync(postsDirectory);
 buildDb(rootPath).then(function (db) {
 	app.set('db', db);
 });
@@ -128,7 +130,7 @@ app.use(function (req, res) {
 	res.send(fs.readFileSync('./public/index.html').toString());
 });
 
-var server = app.listen(3000, 'localhost', function () {
+var server = app.listen(process.env.MANLY_PORT || 3000, 'localhost', function () {
 	var host = server.address().address
 	var port = server.address().port
 
