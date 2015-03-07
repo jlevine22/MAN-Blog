@@ -4,10 +4,10 @@ var fs = require('fs');
 var async = require('async');
 var Loki = require('lokijs');
 
-var postsDirectory = process.env.MANLY_POSTS_DIR || './posts';
+var postsDirectory = process.env.MANLY_POSTS_DIR || __dirname + '/../posts';
 
 var app = express();
-app.use(express.static('./public'));
+app.use(express.static(__dirname + '/../public'));
 app.use('/posts', express.static(postsDirectory));
 
 function getPaths(rootPath) {
@@ -127,7 +127,7 @@ app.get('/posts/:slug', function (req, res) {
 });
 
 app.use(function (req, res) {
-	res.send(fs.readFileSync('./public/index.html').toString());
+	res.send(fs.readFileSync(__dirname + '/../public/index.html').toString());
 });
 
 var server = app.listen(process.env.MANLY_PORT || 3000, 'localhost', function () {
