@@ -113,7 +113,7 @@ watchr.watch(watchrConfig);
 // routes
 app.get('/posts', function (req, res) {
 	var db = app.get('db');
-	var posts = db.getCollect0ion('posts');
+	var posts = db.getCollection('posts');
 	var sortedPosts = posts.getDynamicView('sortedByDate');
 
 	res.send(sortedPosts.data());
