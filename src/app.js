@@ -44,8 +44,8 @@ function buildDb(path) {
 		var date2 = obj2.date || null;
 
 		if (date1 == date2) return 0;
-		if (date1 > date2) return 1;
-		if (date1 < date2) return -1;
+		if (date1 > date2) return -1;
+		if (date1 < date2) return 1;
 	});
 
 	var paths = getPaths(path);
@@ -73,7 +73,9 @@ function buildDb(path) {
 					post.summary = htmlSummary;
 					post.hasMore = hasMore;
 
-					posts.insert(post);
+					if (post.published !== false) {
+						posts.insert(post);
+					}
 
 					return post;
 				})
@@ -85,10 +87,33 @@ function buildDb(path) {
 	});
 }
 
+var watchrConfig = {
+	path: rootPath,
+	listener: function (type, path) {
+		// Perform an incremental update of the database
+		//switch (type) {
+		//	case 'update':
+		//		break;
+		//	case 'create':
+		//		break;
+		//	case 'delete':
+		//		break;
+		//}
+
+		// Rebuild the db for now until I have time to properly implement incremental updates
+		//
+		buildDb(rootPath).then(function (db) {
+			app.set('db', db);
+		});
+	}
+};
+var watchr = require('watchr');
+watchr.watch(watchrConfig);
+
 // routes
 app.get('/posts', function (req, res) {
 	var db = app.get('db');
-	var posts = db.getCollection('posts');
+	var posts = db.getCollect0ion('posts');
 	var sortedPosts = posts.getDynamicView('sortedByDate');
 
 	res.send(sortedPosts.data());
