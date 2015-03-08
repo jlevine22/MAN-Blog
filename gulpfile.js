@@ -22,6 +22,10 @@ gulp.task('new-post', function () {
 
     var dateAndTitleSchema = {
         properties: {
+			author: {
+				description: 'Author:',
+				default: (require('./man.json') || {}).defaultAuthor || 'Anonymous'
+			},
             date: {
                 description: 'Publish Date:',
                 pattern: /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/,
@@ -32,7 +36,15 @@ gulp.task('new-post', function () {
                 description: 'Post Title:',
                 required: true,
                 message: 'You must enter a post title!'
-            }
+            },
+			saveLocation: {
+				description: 'Where do you want to save this file?',
+				default: (require('./man.json') || {}).defaultPostsDirectory || __dirname + '/posts'
+			},
+			published: {
+				description: 'Published?',
+				default: 'false'
+			}
         }
     };
 
@@ -52,21 +64,31 @@ gulp.task('new-post', function () {
             var slug = result.title.toLowerCase().replace(/[^a-z0-9 ]/gi, '').trim().replace(/ /g, '-');
             slugSchema.properties.slug.description = 'Post Slug:';
             slugSchema.properties.slug.default = slug;
-            return [result.date, result.title, promptGet(slugSchema).then(function (result) { return result.slug })];
-        }).spread(function (date, title, slug) {
-            var path = 'posts/' + slug + '.md'
+            return [
+				result.date,
+				result.title,
+				result.author,
+				promptGet(slugSchema)
+					.then(function (result) {
+						return result.slug
+					}),
+				result.saveLocation,
+				result.published
+			];
+        }).spread(function (date, title, author, slug, saveLocation, published) {
+            var path = saveLocation + '/' + slug + '.md'
             if (fs.existsSync(path)) {
                 console.error('Ooops, that date/slug already exists!');
                 return;
             }
             var template = fs.readFileSync('posts/.default.md').toString();
-            file = template.replace('#date#', date).replace('#title#', title).replace('#slug#', slug).replace('#author#', 'Josh Levine');
+            file = template
+				.replace('#date#', date)
+				.replace('#title#', title)
+				.replace('#slug#', slug)
+				.replace('#author#', author)
+				.replace('#published#', published);
             fs.writeFileSync(path, file);
-
-            console.log('got values:');
-            console.log('date = %s', date);
-            console.log('title = %s', title);
-            console.log('slug = %s', slug);
         });
 
 });

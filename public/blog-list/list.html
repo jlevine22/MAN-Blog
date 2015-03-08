@@ -5,4 +5,6 @@
         <div ng-bind-html="post.summary | rawHtml"></div>
         <p ng-if="post.hasMore"><a href="/p/{{ post.slug }}">Read More</a></p>
     </div><!-- /.blog-post -->
+    <div ng-if="loaded && posts.length == 0">No posts</div>
+    <div ng-if="!loaded">Loading...</div>
 </div>

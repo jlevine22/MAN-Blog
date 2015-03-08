@@ -9,8 +9,13 @@ define(['angular', 'ui-router'], function (angular) {
 		})
 		.controller('BlogListCtrl', function ($scope, $http) {
 
+			$scope.loaded = false;
+			$scope.posts = [];
+
 			$http.get('/posts').then(function (response) {
 				$scope.posts = response.data;
+			}).finally(function () {
+				$scope.loaded = true;
 			});
 
 		});
