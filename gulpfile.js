@@ -39,7 +39,7 @@ gulp.task('new-post', function () {
             },
 			saveLocation: {
 				description: 'Where do you want to save this file?',
-				default: (require('./man.json') || {}).defaultPostsDirectory || __dirname + '/posts'
+				default: (require('./man.json') || {}).postsDirectory || fs.realpathSync(__dirname + '/posts')
 			},
 			published: {
 				description: 'Published?',

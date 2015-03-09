@@ -49,6 +49,4 @@ require(['angular','ui-router','moment'], function (angular, uiRouter, moment) {
 	require(['blog-list/main', 'blog-post/main'], function () {
 		angular.bootstrap(document, ['MANBlog']);
 	});
-
-
 });

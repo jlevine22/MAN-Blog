@@ -1,114 +1,35 @@
-var express = require('express');
 var Promise = require('bluebird');
-var fs = require('fs');
-var async = require('async');
 var Loki = require('lokijs');
 
-var postsDirectory = process.env.MANLY_POSTS_DIR || __dirname + '/../posts';
+var _ = require('lodash');
+var fs = require('fs');
+var express = require('express');
+var async = require('async');
+var bodyParser = require('body-parser');
+var buildDb = require('./functions/builddb');
 
+var config = _.merge({
+		postsDirectory: fs.realpathSync(__dirname + '/../posts'),
+		githubPushUpdateEnabled: false,
+		port: 3000,
+		host: 'localhost',
+		serveStatic: true
+	},
+	require('../man.json') || {});
+
+// Create app
 var app = express();
-app.use(express.static(__dirname + '/../public'));
-app.use('/posts', express.static(postsDirectory));
 
-function getPaths(rootPath) {
-	var paths = [];
-	fs.readdirSync(rootPath).forEach(function (path) {
-		if (path == '.default.md') return;
-		if (path == '.' || path == '..') return;
-		var fullPath = rootPath + '/' + path;
-		var stat = fs.statSync(fullPath);
-		if (stat.isFile() && fullPath.match(/\.md$/i)) {
-			paths.push(fullPath);
-		} else if (stat.isDirectory()) {
-			paths = paths.concat(getPaths(fullPath));
-		}
-	});
-	return paths;
+// Serve static assets
+if (config.serveStatic) {
+	console.log('Serving static files');
+	app.use(express.static(__dirname + '/../public'));
 }
 
-var rootPath = fs.realpathSync(postsDirectory);
-buildDb(rootPath).then(function (db) {
-	app.set('db', db);
+// Serve the index file if the slug url is used
+app.get('/p/*', function (req, res) {
+	res.sendFile(fs.realpathSync(__dirname + '/../public/index.html'));
 });
-
-function buildDb(path) {
-	var readFile = Promise.promisify(fs.readFile);
-	var marked = Promise.promisify(require('marked'));
-	var yaml = require('js-yaml');
-	var splitInput = require('./functions/parsing').splitInput;
-	var db = new Loki();
-	var posts = db.addCollection('posts');
-	var sortedView = posts.addDynamicView('sortedByDate');
-	sortedView.applySort(function (obj1, obj2) {
-		var date1 = obj1.date || null;
-		var date2 = obj2.date || null;
-
-		if (date1 == date2) return 0;
-		if (date1 > date2) return -1;
-		if (date1 < date2) return 1;
-	});
-
-	var paths = getPaths(path);
-	var filesIndexed = [];
-	paths.forEach(function (path) {
-		filesIndexed.push(
-			readFile(path)
-				.then(function bufferToString(data) {
-					return data.toString();
-				})
-				.then(splitInput)
-				.spread(function parseSections(yamlString, markdownString) {
-					if (markdownString.match(/;;;/)) {
-						var hasMore = true;
-					}
-					return [
-						yamlString ? yaml.safeLoad(yamlString) : null,
-						marked(markdownString.split(';;;')[0]),
-						hasMore || false
-					];
-				})
-				.spread(function createFinalObject(meta, htmlSummary, hasMore) {
-					var post = meta || {};
-					post.path = path;
-					post.summary = htmlSummary;
-					post.hasMore = hasMore;
-
-					if (post.published !== false) {
-						posts.insert(post);
-					}
-
-					return post;
-				})
-		);
-	});
-
-	return Promise.all(filesIndexed).then(function () {
-		return db;
-	});
-}
-
-var watchrConfig = {
-	path: rootPath,
-	listener: function (type, path) {
-		// Perform an incremental update of the database
-		//switch (type) {
-		//	case 'update':
-		//		break;
-		//	case 'create':
-		//		break;
-		//	case 'delete':
-		//		break;
-		//}
-
-		// Rebuild the db for now until I have time to properly implement incremental updates
-		//
-		buildDb(rootPath).then(function (db) {
-			app.set('db', db);
-		});
-	}
-};
-var watchr = require('watchr');
-watchr.watch(watchrConfig);
 
 // routes
 app.get('/posts', function (req, res) {
@@ -151,13 +72,80 @@ app.get('/posts/:slug', function (req, res) {
 	});
 });
 
+app.post('/github', bodyParser.json(), function (req, res) {
+	res.send('OK');
+
+	if (!config.githubPushUpdateEnabled) {
+		return;
+	}
+
+	var crypto = require('crypto');
+	var hash = crypto.createHmac('sha1', config.githubPushSecret).update(JSON.stringify(req.body)).digest('hex');
+
+	if ('sha1=' + hash != req.get('X-Hub-Signature')) {
+		return;
+	}
+
+	var rootPath = fs.realpathSync(__dirname + '/../');
+
+	var exec = function (cmd) {
+		console.log('execing command: %s', cmd);
+		return new Promise(function (resolve, reject) {
+			require('child_process').exec(cmd, function (error, stdout, stderr) {
+				if (error) return reject(error);
+				resolve([stdout, stderr]);
+			});
+		});
+	};
+
+	var cwd = process.cwd();
+	process.chdir(rootPath);
+	exec('git pull').spread(function (stdout, stderr) {
+		return exec('npm install');
+	}).spread(function (stdout, stderr) {
+		process.exit();
+	}).finally(function () {
+		process.chdir(cwd);
+	});
+});
+
+// Fallback, serve the index file
 app.use(function (req, res) {
 	res.send(fs.readFileSync(__dirname + '/../public/index.html').toString());
 });
 
-var server = app.listen(process.env.MANLY_PORT || 3000, 'localhost', function () {
-	var host = server.address().address
-	var port = server.address().port
+// Watchr Config to detect file changes
+var watchrConfig = {
+	path: config.postsDirectory,
+	listener: function (type, path) {
+		// Perform an incremental update of the database
+		//switch (type) {
+		//	case 'update':
+		//		break;
+		//	case 'create':
+		//		break;
+		//	case 'delete':
+		//		break;
+		//}
 
-	console.log ('Example app listening at http://%s:%s', host, port)
+		// Rebuild the db for now until I have time to properly implement incremental updates
+		//
+		buildDb(config.postsDirectory).then(function (db) {
+			app.set('db', db);
+		});
+	}
+};
+
+// Build the database, watch the posts directory for changes, and start listening for connections
+buildDb(config.postsDirectory).then(function (db) {
+	var watchr = require('watchr');
+	watchr.watch(watchrConfig);
+	app.set('db', db);
+
+	var server = app.listen(config.port, config.host, function () {
+		var host = server.address().address
+		var port = server.address().port
+
+		console.log ('Manly Blog app listening at http://%s:%s', host, port)
+	});
 });
