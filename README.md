@@ -60,7 +60,7 @@ server {
     error_log off;
     
     # Serve the single page app for /p/post-slug urls
-    rewrite ^/p/.*$ /index.html
+    rewrite ^/p/.*$ /index.html;
 
     # Catch requests starting with /posts and send them to the node app
     location ~ ^/posts {
