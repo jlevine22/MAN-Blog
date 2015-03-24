@@ -2,7 +2,7 @@
     <div class="blog-post" ng-repeat="post in posts">
         <h2 class="blog-post-title"><a href="/p/{{ post.slug }}">{{ post.title }}</a></h2>
         <p class="blog-post-meta">{{ post.date | blogPostDate }} by {{ post.author }}</p>
-        <div ng-bind-html="post.summary | rawHtml"></div>
+        <div ng-bind-html="post.summary | rawHtml" class="markdown"></div>
         <p ng-if="post.hasMore"><a href="/p/{{ post.slug }}">Read More</a></p>
     </div><!-- /.blog-post -->
     <div ng-if="loaded && posts.length == 0">No posts</div>

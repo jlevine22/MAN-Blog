@@ -2,6 +2,6 @@
     <div class="blog-post">
         <h2 class="blog-post-title">{{ post.title }}</h2>
         <p class="blog-post-meta">{{ post.date | blogPostDate }} by {{ post.author }}</p>
-        <div ng-bind-html="post.html | rawHtml"></div>
+        <div ng-bind-html="post.html | rawHtml" class="markdown"></div>
     </div><!-- /.blog-post -->
 </div>
