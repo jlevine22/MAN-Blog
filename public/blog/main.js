@@ -4,7 +4,9 @@ require.config({
 		'lib': 'bower_components',
 		'angular': 'bower_components/angular/angular.min',
 		'ui-router': 'bower_components/angular-ui-router/release/angular-ui-router',
-		'moment': 'bower_components/moment/min/moment.min'
+		'moment': 'bower_components/moment/min/moment.min',
+        'angulartics': 'bower_components/angulartics/dist/angulartics.min',
+        'angulartics-ga': 'bower_components/angulartics/dist/angulartics-ga.min'
 	},
 	shim: {
 		'ui-router': {
@@ -16,12 +18,19 @@ require.config({
 		},
 		'moment': {
 			exports: 'moment'
-		}
+		},
+        'angulartics': {
+            deps:['angular','bower_components/waypoints/waypoints.min.js','bower_components/SHA-1/sha1.js']
+        },
+        'angulartics-ga': {
+            deps:['angulartics']
+        }
+
 	}
 });
 
-require(['angular','ui-router','moment'], function (angular, uiRouter, moment) {
-	var MANBlog = angular.module('MANBlog', ['ui.router']);
+require(['angular','ui-router','moment','angulartics','angulartics-ga'], function (angular, uiRouter, moment) {
+	var MANBlog = angular.module('MANBlog', ['ui.router','angulartics','angulartics.google.analytics']);
 	MANBlog.config(function($urlRouterProvider, $locationProvider) {
 		console.log('configging');
 		//
