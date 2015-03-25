@@ -1,5 +1,4 @@
 var Promise = require('bluebird');
-var Loki = require('lokijs');
 
 var _ = require('lodash');
 var fs = require('fs');
@@ -8,70 +7,53 @@ var async = require('async');
 var bodyParser = require('body-parser');
 var buildDb = require('./functions/builddb');
 
+var kvstore = require('./kvstore');
+
+/**
+ * Setup our app
+ */
 var config = _.merge({
 		postsDirectory: fs.realpathSync(__dirname + '/../posts'),
+        cacheDirectory: fs.realpathSync(__dirname + '/../cache'),
 		githubPushUpdateEnabled: false,
 		port: 3000,
-		host: 'localhost',
-		serveStatic: true
+		host: 'localhost'
 	},
 	require('../man.json') || {});
 
 // Create app
 var app = express();
 
-// Serve static assets
-if (config.serveStatic) {
-	console.log('Serving static files');
-	app.use(express.static(__dirname + '/../public'));
-}
-
-// Serve the index file if the slug url is used
-app.get('/p/*', function (req, res) {
-	res.sendFile(fs.realpathSync(__dirname + '/../public/index.html'));
-});
-
-// routes
+/**
+ * Post routes
+ */
 app.get('/posts', function (req, res) {
-	var db = app.get('db');
-	var posts = db.getCollection('posts');
-	var sortedPosts = posts.getDynamicView('sortedByDate');
-
-	res.send(sortedPosts.data());
+    var page = req.query.p || 1;
+    var start = (page - 1) * 10;
+    kvstore.sort('date').then(function(sorted) {
+        var ordered = sorted.slice();
+        ordered.reverse();
+        async.map(ordered.slice(start, 10), function getValueForKey(key, callback) {
+            callback(null, kvstore.store.get(key));
+        }, function mapResults(err, results) {
+            if (err) throw err;
+            res.send(results || []);
+        });
+    });
 });
 
 app.get('/posts/:slug', function (req, res) {
-	var db = app.get('db');
-	var posts = db.getCollection('posts');
-	var post = posts.findOne({ slug: req.params.slug });
-
-	if (null === post) {
+    var post = kvstore.store.get(req.param.slug);
+    if (null === post) {
 		res.status(404).send('Not found');
 		return;
 	}
-
-	var marked = Promise.promisify(require('marked'));
-	var splitInput = require('./functions/parsing').splitInput
-	var readFile = Promise.promisify(fs.readFile);
-	readFile(post.path).then(function (buffer) {
-		// Split the input
-		return splitInput(buffer.toString().replace(';;;',''));
-	}).spread(function (yamlString, markdownString) {
-		var yaml = require('js-yaml');
-		return [
-			yamlString? yaml.safeLoad(yamlString) : null,
-			marked(markdownString)
-		];
-	}).spread(function (meta, html) {
-		meta = meta || {};
-		meta.html = html;
-		res.send(meta);
-	}).catch(function (error) {
-		console.error(error);
-		res.status(500).send('Something went wrong!');
-	});
+    res.send(post);
 });
 
+/**
+ * Github auto-update route
+ */
 app.post('/github', bodyParser.json(), function (req, res) {
 	res.send('OK');
 
@@ -109,12 +91,29 @@ app.post('/github', bodyParser.json(), function (req, res) {
 	});
 });
 
+/**
+ * Static file serving
+ */
+
+// Serve static assets
+app.use(express.static(__dirname + '/../public'));
+
+// Serve the index file if the slug url is used
+app.get('/p/*', function (req, res) {
+    res.sendFile(fs.realpathSync(__dirname + '/../public/index.html'));
+});
+
+// Serve cached files
+app.use('/cache', express.static(config.cacheDirectory));
+
 // Fallback, serve the index file
 app.use(function (req, res) {
 	res.send(fs.readFileSync(__dirname + '/../public/index.html').toString());
 });
 
-// Watchr Config to detect file changes
+/**
+ * File watching
+ */
 var watchrConfig = {
 	path: config.postsDirectory,
 	listener: function (type, path) {
@@ -130,17 +129,16 @@ var watchrConfig = {
 
 		// Rebuild the db for now until I have time to properly implement incremental updates
 		//
-		buildDb(config.postsDirectory).then(function (db) {
-			app.set('db', db);
+		buildDb(config.postsDirectory, cacheDirectory).then(function (kvstore) {
+
 		});
 	}
 };
 
 // Build the database, watch the posts directory for changes, and start listening for connections
-buildDb(config.postsDirectory).then(function (db) {
+buildDb(config.postsDirectory, config.cacheDirectory).then(function (kvstore) {
 	var watchr = require('watchr');
 	watchr.watch(watchrConfig);
-	app.set('db', db);
 
 	var server = app.listen(config.port, config.host, function () {
 		var host = server.address().address

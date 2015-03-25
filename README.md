@@ -18,10 +18,10 @@ MAN Blog is designed to run with no further configuration. You will probably wan
 
 ### Supported Values
 - ```postsDirectory``` - Path where post files are stored. Defaults to the /posts directory in the project root.
+- ```cacheDirectory``` - Path where post files are rendered as html and cached. Defaults to the /cache directory in the project root.
 - ```githubPushUpdateEnabled``` - Enables the /github route for handling Github webhooks to pull new code when there are updates. Defaults to ```false```
 - ```githubPushSecret``` - The secret key for the github webhook. Defaults to ```null```
 - ```defaultAuthor``` - Sets a default value for the author field when running through the ```gulp new-post``` prompts. Defaults to ```null``` but the skeleton post generator will use 'Anonymous' if no default is set.
-- ```serveStatic``` -  Serve static files from the /public directory. This is ```true``` by default but should be disabled in production since you are using Nginx to serve static files (you are, right??).
 - ```port``` - The port to listen on. Defaults to 3000
 - ```host``` - The host to bind to. Defaults to localhost
 
