@@ -2,8 +2,8 @@
     <div class="blog-post col-md-9" ng-if="!error">
         <h2 class="blog-post-title">{{ post.title }}</h2>
         <p class="blog-post-meta">{{ post.date | blogPostDate }} by {{ post.author }}</p>
-        <div ng-include="'/cache/' + post.slug + '.summary.html'" class="markdown"></div>
-        <div ng-include="'/cache/' + post.slug + '.html'" class="markdown"></div>
+        <div ng-if="post.slug && post.summary" ng-include="'/cache/' + post.slug + '.summary.html'" class="markdown"></div>
+        <div ng-if="post.slug" ng-include="'/cache/' + post.slug + '.html'" class="markdown"></div>
     </div><!-- /.blog-post -->
     <div ng-if="!error" class="col-md-3">
         <div ng-if="post.tags.length">
