@@ -63,7 +63,7 @@ server {
     rewrite ^/p/.*$ /index.html;
 
     # Catch requests starting with /posts and send them to the node app
-    location ~ ^/posts {
+    location ~ ^/(posts|tags) {
         proxy_pass http://127.0.0.1:3000;
         proxy_set_header        X-Real-IP       $remote_addr;
         proxy_set_header        Host            $host;

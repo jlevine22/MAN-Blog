@@ -20,7 +20,10 @@ module.exports = {
      */
     splitMarkdown: function (data) {
         if (data.match(/;;;/)) {
-            var split = data.split(';;;', 2);
+            var split = data.split(';;;');
+            if (split.length > 2) {
+                split = [split[0], split.slice(1).join(';;;')];
+            }
             return split;
         }
         return [

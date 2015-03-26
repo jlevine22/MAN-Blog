@@ -1,9 +1,15 @@
-<div ng-controller="BlogPostCtrl">
-    <div class="blog-post" ng-if="!error">
+<div ng-controller="BlogPostCtrl" class="container">
+    <div class="blog-post col-md-9" ng-if="!error">
         <h2 class="blog-post-title">{{ post.title }}</h2>
         <p class="blog-post-meta">{{ post.date | blogPostDate }} by {{ post.author }}</p>
         <div ng-include="'/cache/' + post.slug + '.summary.html'" class="markdown"></div>
         <div ng-include="'/cache/' + post.slug + '.html'" class="markdown"></div>
     </div><!-- /.blog-post -->
-    <div class="blog-post" ng-if="error">Error getting post.</div>
+    <div ng-if="!error" class="col-md-3">
+        <div ng-if="post.tags.length">
+            <h4>Tagged</h4>
+            <div ng-repeat="tag in post.tags"> <a href="/?t={{tag}}">{{tag}}</a></div>
+        </div>
+    </div>
+    <div class="blog-post col-md-12" ng-if="error">Error getting post.</div>
 </div>

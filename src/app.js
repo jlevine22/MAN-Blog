@@ -2,6 +2,7 @@ var Promise = require('bluebird');
 
 var _ = require('lodash');
 var fs = require('fs');
+var util = require('util');
 var express = require('express');
 var async = require('async');
 var bodyParser = require('body-parser');
@@ -31,11 +32,30 @@ app.get('/posts', function (req, res) {
     var page = req.query.p || 1;
     var start = (page - 1) * 10;
 
-    var data = kvstore.sort('date').then(function(sorted) {
-        var ordered = sorted.slice();
+    var data = kvstore.sort('date').then(function(sortedKeys) {
+        var ordered = sortedKeys.slice();
         ordered.reverse();
         return ordered;
     });
+
+    if (req.query.t) {
+        data = data.then(function(keys) {
+            var tags = util.isArray(req.query.t) ? req.query.t : [req.query.t];
+            var tagIndexes = [];
+            tags.forEach(function(tag) {
+                tagIndexes.push(kvstore.index('tags', tag));
+            });
+            return Promise.all(tagIndexes).then(function(tagKeys) {
+                tagKeys.forEach(function(k) {
+                    keys = _.intersection(keys, k);
+                });
+                return keys;
+            });
+        });
+
+
+
+    }
 
     if (req.query.q) {
         data = data.then(function (values) {
@@ -71,6 +91,28 @@ app.get('/posts/:slug', function (req, res) {
 		return;
 	}
     res.send(post);
+});
+
+app.get('/tags', function(req, res) {
+    var tags = [];
+
+    kvstore.index('tags').then(function(tagsIndex) {
+        // Add the tags to the tags array so they can be sorted
+        function tagsIndexIterator(tag, callback) {
+            tags.push({ name: tag, count: tagsIndex[tag].length });
+            callback();
+        }
+        // Sort the tags by count
+        function tagsIndexIteratorComplete() {
+            async.sortBy(tags, function(tag, callback) {
+                callback(null, -tag.count);
+            }, function(err, sortedTags) {
+                res.send(sortedTags);
+            });
+        }
+        // Run the iterator
+        async.each(Object.keys(tagsIndex), tagsIndexIterator, tagsIndexIteratorComplete);
+    });
 });
 
 /**

@@ -27,7 +27,7 @@ h6, .h6 {
 
 @media (min-width: 1200px) {
     .container {
-        width: 870px;
+        width: 970px;
     }
 }
 
@@ -40,6 +40,7 @@ h6, .h6 {
     width:100%;
     opacity:0.8;
     position:fixed;
+    z-index:1000;
 }
 
 .blog-title > h1,

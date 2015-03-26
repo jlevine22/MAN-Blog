@@ -60,6 +60,12 @@ describe('kvstore', function() {
             kvstore.store.put('indexed-key-3', { indexedField: 100 });
             kvstore.store.put('indexed-key-4', { indexedField: 50 });
             kvstore.store.put('indexed-key-5', { indexedField: 66 });
+
+            kvstore.store.put('key-111', { indexedArrayField: [2, 4, 6, 8, 10] });
+            kvstore.store.put('key-222', { indexedArrayField: [2, 4, 10] });
+            kvstore.store.put('key-333', { indexedArrayField: ['a', 'b', 'c', 'd'] });
+            kvstore.store.put('key-444', { indexedArrayField: ['a', 'b'] });
+            kvstore.store.put('key-555', { indexedArrayField: ['b', 'c', 'd'] });
         });
         it('should resolve an index object', function() {
             var indices = [20, 50, 66, 100];
@@ -88,6 +94,29 @@ describe('kvstore', function() {
                             index[66].indexOf('indexed-key-5').should.equal(0);
                     }
                 });
+            });
+        });
+        it('should resolve an index object for array fields', function() {
+            return kvstore.index('indexedArrayField').then(function(index) {
+                index['a'].should.be.an.Array;
+                index['a'].length.should.equal(2);
+                index['a'].indexOf('key-333').should.not.equal(-1);
+                index['a'].indexOf('key-444').should.not.equal(-1);
+
+                index['b'].should.be.an.Array;
+                index['b'].length.should.equal(3);
+                index['b'].indexOf('key-333').should.not.equal(-1);
+                index['b'].indexOf('key-444').should.not.equal(-1);
+                index['b'].indexOf('key-555').should.not.equal(-1);
+            });
+        });
+        it('should return an array for a specific index value', function() {
+            return kvstore.index('indexedArrayField', 'b').then(function (keys) {
+                keys.should.be.an.Array;
+                keys.length.should.equal(3);
+                keys.indexOf('key-333').should.not.equal(-1);
+                keys.indexOf('key-444').should.not.equal(-1);
+                keys.indexOf('key-555').should.not.equal(-1);
             });
         });
     });

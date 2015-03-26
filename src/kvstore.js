@@ -1,5 +1,6 @@
 var KVEmitter = require('./kvemitter');
 var async = require('async');
+var util = require('util');
 var Promise = require('bluebird');
 
 var sorts = {};
@@ -13,10 +14,18 @@ function index(keys, field) {
         async.each(keys, function indexIterator(key, callback) {
             var value = kve.get(key);
             if (value != null && value[field] != null) {
-                if (indexObject[value[field]] == null) {
-                    indexObject[value[field]] = [];
+                var values;
+                if (!util.isArray(value[field])) {
+                    values = [value[field]];
+                } else {
+                    values = value[field];
                 }
-                indexObject[value[field]].push(key);
+                values.forEach(function(v) {
+                    if (indexObject[v] == null) {
+                        indexObject[v] = [];
+                    }
+                    indexObject[v].push(key);
+                });
             }
             callback();
         }, function(err) {
@@ -76,12 +85,17 @@ module.exports = {
         }
         return sorts[sortBy];
     },
-    index: function(field) {
+    index: function(field, value) {
         if (!field) {
             throw new Error("field is required");
         }
         if (!indices[field]) {
             indices[field] = index(kve.keys(), field);
+        }
+        if (value) {
+            return indices[field].then(function(index) {
+                return index[value] || [];
+            });
         }
         return indices[field];
     },

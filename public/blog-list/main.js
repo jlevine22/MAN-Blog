@@ -7,16 +7,31 @@ define(['angular', 'ui-router'], function (angular) {
                     templateUrl: "blog-list/list.html"
                 });
         })
-        .controller('BlogListCtrl', function($scope, $http) {
+        .controller('BlogListCtrl', function($scope, $http, $location) {
 
             $scope.search = {value:''};
             $scope.loaded = false;
             $scope.posts = [];
+            $scope.tags = [];
 
-            $http.get('/posts').then(function(response) {
-                $scope.posts = response.data;
-            }).finally(function () {
-                $scope.loaded = true;
+            function loadPosts() {
+                $http({
+                    method: 'GET',
+                    url: '/posts',
+                    params: $location.search()
+                }).then(function(response) {
+                    $scope.posts = response.data;
+                }).finally(function () {
+                    $scope.loaded = true;
+                });
+            };
+
+            loadPosts();
+
+            $scope.$on('$locationChangeSuccess', loadPosts);
+
+            $http.get('/tags').then(function(response) {
+                $scope.tags = response.data;
             });
 
             var searchAgain = false;
