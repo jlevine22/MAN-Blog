@@ -53,4 +53,42 @@ describe('kvstore', function() {
             });
         });
     });
+    describe('index()', function() {
+        before(function() {
+            kvstore.store.put('indexed-key-1', { indexedField: 20 });
+            kvstore.store.put('indexed-key-2', { indexedField: 50 });
+            kvstore.store.put('indexed-key-3', { indexedField: 100 });
+            kvstore.store.put('indexed-key-4', { indexedField: 50 });
+            kvstore.store.put('indexed-key-5', { indexedField: 66 });
+        });
+        it('should resolve an index object', function() {
+            var indices = [20, 50, 66, 100];
+            var getIndex = kvstore.index('indexedField');
+
+            return getIndex.then(function(index) {
+                indices.forEach(function(i) {
+                    index[i].should.be.an.Array;
+                    if (i == 50) {
+                        index[i].length.should.equal(2);
+                    } else {
+                        index[i].length.should.equal(1);
+                    }
+                    switch(i) {
+                        case 20:
+                            index[20].indexOf('indexed-key-1').should.equal(0);
+                            break;
+                        case 50:
+                            index[50].indexOf('indexed-key-2').should.equal(0);
+                            index[50].indexOf('indexed-key-4').should.equal(1);
+                            break;
+                        case 100:
+                            index[100].indexOf('indexed-key-3').should.equal(0);
+                            break;
+                        case 66:
+                            index[66].indexOf('indexed-key-5').should.equal(0);
+                    }
+                });
+            });
+        });
+    });
 });

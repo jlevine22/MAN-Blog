@@ -13,8 +13,12 @@ function KVEmitter(start) {
     }
 
     this.put = function(key, value) {
+        var event = { key: key, value: value };
+        if (data[key]) {
+            event.oldValue = data[key];
+        }
         data[key] = value;
-        this.emit('put', { key: key, value: value });
+        this.emit('put', event);
     }
 
     this.delete = function(key) {

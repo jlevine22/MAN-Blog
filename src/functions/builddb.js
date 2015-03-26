@@ -10,7 +10,9 @@ module.exports = function buildDb(path, cacheDirectory) {
 	var filesIndexed = [];
 	paths.forEach(function (path) {
         var p = parseFile(path, cacheDirectory).then(function(file) {
-            kvstore.store.put(file.slug, file);
+            if (file.published) {
+                kvstore.store.put(file.slug, file);
+            }
         });
 		filesIndexed.push(p);
 	});

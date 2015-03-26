@@ -85,5 +85,12 @@ server {
         access_log off;
         expires max;
     }
+
+    # Serve the cached markdown-to-html conversions
+    location ~ ^/cache {
+        root /path/to/cache/directory;
+        access_log off;
+        expires max;
+    }
 }
 ```

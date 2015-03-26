@@ -30,10 +30,32 @@ var app = express();
 app.get('/posts', function (req, res) {
     var page = req.query.p || 1;
     var start = (page - 1) * 10;
-    kvstore.sort('date').then(function(sorted) {
+
+    var data = kvstore.sort('date').then(function(sorted) {
         var ordered = sorted.slice();
         ordered.reverse();
-        async.map(ordered.slice(start, 10), function getValueForKey(key, callback) {
+        return ordered;
+    });
+
+    if (req.query.q) {
+        data = data.then(function (values) {
+            return new Promise(function (resolve) {
+                async.filter(values, function queryIterator(key, callback) {
+                    var value = kvstore.store.get(key);
+                    if (!value || !value.title || typeof value.title != 'string') {
+                        return callback(false);
+                    }
+                    var regexp = new RegExp(req.query.q, 'i');
+                    callback(value.title.match(regexp));
+                }, function filteredResults(results) {
+                    resolve(results);
+                });
+            });
+        });
+    }
+
+    data = data.then(function(values) {
+        async.map(values.slice(start, 10), function getValueForKey(key, callback) {
             callback(null, kvstore.store.get(key));
         }, function mapResults(err, results) {
             if (err) throw err;
@@ -43,7 +65,7 @@ app.get('/posts', function (req, res) {
 });
 
 app.get('/posts/:slug', function (req, res) {
-    var post = kvstore.store.get(req.param.slug);
+    var post = kvstore.store.get(req.params.slug);
     if (null === post) {
 		res.status(404).send('Not found');
 		return;
@@ -129,9 +151,7 @@ var watchrConfig = {
 
 		// Rebuild the db for now until I have time to properly implement incremental updates
 		//
-		buildDb(config.postsDirectory, cacheDirectory).then(function (kvstore) {
-
-		});
+		buildDb(config.postsDirectory, cacheDirectory);
 	}
 };
 

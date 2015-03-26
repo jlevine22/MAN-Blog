@@ -1,8 +1,9 @@
 <div ng-controller="BlogPostCtrl">
-    <div class="blog-post">
+    <div class="blog-post" ng-if="!error">
         <h2 class="blog-post-title">{{ post.title }}</h2>
         <p class="blog-post-meta">{{ post.date | blogPostDate }} by {{ post.author }}</p>
         <div ng-include="'/cache/' + post.slug + '.summary.html'" class="markdown"></div>
         <div ng-include="'/cache/' + post.slug + '.html'" class="markdown"></div>
     </div><!-- /.blog-post -->
+    <div class="blog-post" ng-if="error">Error getting post.</div>
 </div>

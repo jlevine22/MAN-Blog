@@ -7,6 +7,24 @@ var indices = {};
 var sorting = {};
 var kve = new KVEmitter();
 
+function index(keys, field) {
+    return new Promise(function(resolve, reject) {
+        var indexObject = {};
+        async.each(keys, function indexIterator(key, callback) {
+            var value = kve.get(key);
+            if (value != null && value[field] != null) {
+                if (indexObject[value[field]] == null) {
+                    indexObject[value[field]] = [];
+                }
+                indexObject[value[field]].push(key);
+            }
+            callback();
+        }, function(err) {
+            resolve(indexObject);
+        });
+    });
+}
+
 function sort(values, field) {
     return new Promise(function(resolve, reject) {
         async.sortBy(values, function(key, callback) {
@@ -57,6 +75,15 @@ module.exports = {
             sorts[sortBy] = sort(kve.keys(), sortBy);
         }
         return sorts[sortBy];
+    },
+    index: function(field) {
+        if (!field) {
+            throw new Error("field is required");
+        }
+        if (!indices[field]) {
+            indices[field] = index(kve.keys(), field);
+        }
+        return indices[field];
     },
     store: kve
 };

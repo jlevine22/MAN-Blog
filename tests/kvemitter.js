@@ -44,6 +44,17 @@ describe('KVEmitter', function() {
             });
             this.kve.put('emit', 'me');
         });
+        it('should pass the old value when emitting a put event for an existing key', function(done) {
+            this.kve.put('existing-key', 'some value');
+            this.kve.get('existing-key').should.equal('some value');
+            this.kve.on('put', function(event) {
+                should(event).have.property('key', 'existing-key');
+                should(event).have.property('value', 'new value');
+                should(event).have.property('oldValue', 'some value');
+                done();
+            });
+            this.kve.put('existing-key', 'new value');
+        });
     });
     describe('#delete', function() {
         beforeEach(function() {
