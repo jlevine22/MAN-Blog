@@ -1,12 +1,12 @@
 require.config({
     baseUrl: '/',
     paths: {
-        'lib': 'bower_components',
-        'angular': 'bower_components/angular/angular.min',
-        'ui-router': 'bower_components/angular-ui-router/release/angular-ui-router',
-        'moment': 'bower_components/moment/min/moment.min',
-        'angulartics': 'bower_components/angulartics/dist/angulartics.min',
-        'angulartics-ga': 'bower_components/angulartics/dist/angulartics-ga.min'
+        'lib': '/bower_components',
+        'angular': '/bower_components/angular/angular.min',
+        'ui-router': '/bower_components/angular-ui-router/release/angular-ui-router',
+        'moment': '/bower_components/moment/min/moment.min',
+        'angulartics': '/bower_components/angulartics/dist/angulartics.min',
+        'angulartics-ga': '/bower_components/angulartics/dist/angulartics-ga.min'
     },
     shim: {
         'ui-router': {
@@ -20,7 +20,7 @@ require.config({
             exports: 'moment'
         },
         'angulartics': {
-            deps:['angular','bower_components/waypoints/waypoints.min.js','bower_components/SHA-1/sha1.js']
+            deps:['angular','/bower_components/waypoints/waypoints.min.js','/bower_components/SHA-1/sha1.js']
         },
         'angulartics-ga': {
             deps:['angulartics']
