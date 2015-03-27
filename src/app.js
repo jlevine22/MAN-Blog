@@ -193,7 +193,7 @@ var watchrConfig = {
 
 		// Rebuild the db for now until I have time to properly implement incremental updates
 		//
-		buildDb(config.postsDirectory, cacheDirectory);
+		buildDb(config.postsDirectory, config.cacheDirectory);
 	}
 };
 
