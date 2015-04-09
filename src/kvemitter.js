@@ -31,6 +31,12 @@ function KVEmitter(start) {
     this.keys = function() {
         return Object.keys(data);
     }
+
+    this.forEach = function(iterator) {
+        this.keys().forEach(function(key) {
+            iterator.call(this, data[key], key);
+        });
+    }
 }
 
 util.inherits(KVEmitter, events.EventEmitter);

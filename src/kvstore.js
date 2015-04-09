@@ -65,7 +65,7 @@ kve.on('put', function(result) {
 });
 
 kve.on('delete', function(key) {
-    async.each(Objects.keys(sorts), function(sortBy) {
+    async.each(Object.keys(sorts), function(sortBy) {
         sorts[sortBy] = sorts[sortBy].then(function (values) {
             var index = values.indexOf(key);
             values.splice(index, 1);

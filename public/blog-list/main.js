@@ -59,6 +59,5 @@ define(['angular', 'ui-router'], function (angular) {
                     searchAgain = true;
                 }
             });
-
         });
 });

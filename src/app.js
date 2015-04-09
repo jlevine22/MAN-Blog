@@ -7,6 +7,8 @@ var express = require('express');
 var async = require('async');
 var bodyParser = require('body-parser');
 var buildDb = require('./functions/builddb');
+var parseFile = require('./functions/parsefile');
+var chokidar = require('chokidar');
 
 var kvstore = require('./kvstore');
 
@@ -52,9 +54,6 @@ app.get('/posts', function (req, res) {
                 return keys;
             });
         });
-
-
-
     }
 
     if (req.query.q) {
@@ -175,37 +174,37 @@ app.use(function (req, res) {
 	res.send(fs.readFileSync(__dirname + '/../public/index.html').toString());
 });
 
-/**
- * File watching
- */
-var watchrConfig = {
-	path: config.postsDirectory,
-	listener: function (type, path) {
-		// Perform an incremental update of the database
-		//switch (type) {
-		//	case 'update':
-		//		break;
-		//	case 'create':
-		//		break;
-		//	case 'delete':
-		//		break;
-		//}
-
-		// Rebuild the db for now until I have time to properly implement incremental updates
-		//
-		buildDb(config.postsDirectory, config.cacheDirectory);
-	}
-};
 
 // Build the database, watch the posts directory for changes, and start listening for connections
-buildDb(config.postsDirectory, config.cacheDirectory).then(function (kvstore) {
-	var watchr = require('watchr');
-	watchr.watch(watchrConfig);
 
-	var server = app.listen(config.port, config.host, function () {
-		var host = server.address().address
-		var port = server.address().port
+chokidar.watch(config.postsDirectory, {})
+    .on('all', function(event, path) {
+        if (!path.match(/\.md$/i)) {
+            return;
+        }
+        console.log(event + ': ' + path);
+        switch(event) {
+            case 'unlink':
+                kvstore.store.forEach(function(item, key) {
+                    kvstore.store.delete(key);
+                });
+                break;
+            case 'add':
+            case 'change':
+            default:
+                parseFile(path, config.cacheDirectory).then(function(file) {
+                    if (file.published) {
+                        kvstore.store.put(file.slug, file);
+                    } else {
+                        kvstore.store.delete(file.slug);
+                    }
+                });
+        }
+    });
 
-		console.log ('Manly Blog app listening at http://%s:%s', host, port)
-	});
+var server = app.listen(config.port, config.host, function () {
+    var host = server.address().address
+    var port = server.address().port
+
+    console.log ('Manly Blog app listening at http://%s:%s', host, port)
 });
