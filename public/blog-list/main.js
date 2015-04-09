@@ -15,9 +15,9 @@ define(['angular', 'ui-router'], function (angular) {
             $scope.tags = [];
 
             function loadPosts() {
-                $http({
+                return $http({
                     method: 'GET',
-                    url: '/posts',
+                    url: '/posts?q=' + encodeURIComponent($scope.search.value),
                     params: $location.search()
                 }).then(function(response) {
                     $scope.posts = response.data;
@@ -45,9 +45,7 @@ define(['angular', 'ui-router'], function (angular) {
                 if (!searchTimeout) {
                     searchTimeout = setTimeout(function search() {
                         searchPending = true;
-                        $http.get('/posts?q=' + encodeURIComponent($scope.search.value)).then(function(response) {
-                            $scope.posts = response.data;
-                        }).finally(function() {
+                        loadPosts().finally(function() {
                             searchPending = false;
                             searchTimeout = null;
                             if (searchAgain) {
