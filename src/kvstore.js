@@ -57,6 +57,9 @@ function sort(values, field) {
 kve.on('put', function(result) {
     function addToSortValues(sortBy) {
         sorts[sortBy] = sorts[sortBy].then(function(values) {
+            if (values.indexOf(result.key) != -1) {
+                return values;
+            }
             values.push(result.key);
             return sort(values, sortBy);
         });
