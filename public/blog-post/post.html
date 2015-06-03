@@ -1,15 +1,19 @@
-<div ng-controller="BlogPostCtrl" class="container">
-    <div class="blog-post col-md-9" ng-if="!error">
-        <h2 class="blog-post-title">{{ post.title }}</h2>
-        <p class="blog-post-meta">{{ post.date | blogPostDate }} by {{ post.author }}</p>
-        <div ng-if="post.slug && post.summary" ng-include="'/cache/' + post.slug + '.summary.html'" class="markdown"></div>
-        <div ng-if="post.slug" ng-include="'/cache/' + post.slug + '.html'" class="markdown"></div>
-    </div><!-- /.blog-post -->
-    <div ng-if="!error" class="col-md-3">
-        <div ng-if="post.tags.length">
-            <h4>Tagged</h4>
-            <div ng-repeat="tag in post.tags"> <a href="/?t={{tag}}">{{tag}}</a></div>
-        </div>
+<div ng-controller="BlogPostCtrl" class="container" layout-sm="column" layout-gt-sm="row" layout-sm="column">
+    <md-card flex-md=65 flex-gt-md=75 class="blog-post col-md-9" ng-if="!error">
+        <md-card-content>
+            <h2 class="blog-post-title">{{ post.title }}</h2>
+            <div ng-if="post.slug && post.summary" ng-include="'/cache/' + post.slug + '.summary.html'" class="markdown"></div>
+            <div ng-if="post.slug" ng-include="'/cache/' + post.slug + '.html'" class="markdown"></div>
+        </md-card-content>
+    </md-card><!-- /.blog-post -->
+    <div flex-md=35 flex-gt-md=25 class="blog-meta">
+        <md-card ng-if="!error" class="col-md-3">
+            <md-card-content>
+                <p class="blog-post-meta">{{ post.date | blogPostDate }}</p>
+                <h4>Tagged</h4>
+                <div ng-repeat="tag in post.tags"> <a href="/?t={{tag}}">{{tag}}</a></div>
+            </md-card-content>
+        </md-card>
     </div>
     <div class="blog-post col-md-12" ng-if="error">Error getting post.</div>
 </div>

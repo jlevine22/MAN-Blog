@@ -5,7 +5,15 @@
 body {
     font-family: "Helvetica Neue", Helvetica, Sans-serif;
     color: #050505;
-    background: #ededed;
+    background: rgb(254, 255, 251);
+}
+
+a {
+    color: rgba(0, 0, 0, 0.9);
+}
+
+a:hover {
+    color: rgb(255, 151, 44);
 }
 
 h1, .h1,
@@ -15,47 +23,80 @@ h4, .h4,
 h5, .h5,
 h6, .h6 {
     margin-top: 0;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-weight: normal;
+    font-weight: bolder;
     color: #333;
 }
 
-
-/*
- * Override Bootstrap's default container.
- */
-
-@media (min-width: 1200px) {
+@media (min-width: 1001px) {
     .container {
         width: 970px;
+        margin: 0 auto;
     }
 }
+
+@media (max-width: 1000px) {
+    .container {
+        width: auto;
+        margin: 0 15px;
+    }
+}
+
+/**
+ * Search Tags Box
+ */
+@media (min-width:601px) {
+    .search-tags {
+        margin: 0 0 0 15px;
+    }    
+}
+
+@media (max-width:600px) {
+    .search-tags {
+        margin: 0 0 15px 0;
+    }    
+}
+
 
 /*
  * Blog Title
  */
-
 .blog-title-container {
-    background: rgb(51, 51, 51);
-    width:100%;
-    opacity:0.8;
-    position:fixed;
-    z-index:1000;
+    padding: 15px 0 15px 0;
 }
 
-.blog-title > h1,
-.blog-title > h5 {
-    color:#ededed;
+.blog-title {
+    background: rgb(254, 255, 251);
 }
 
-.blog-title > h1 {
+.blog-title h1,
+.blog-title h4 {
+    color: inherit;
     margin: 0;
-    padding: 5px 10px;
+    text-align:center;
+}
+
+.blog-title h1 {
+    margin: 0;
+    padding: 5px 10px 0 5px;
+}
+
+.blog-title h4 {
+    margin: 0;
+    padding: 0 10px 5px 5px;
+    opacity: 0.8;
 }
 
 .blog-title a {
-    color:inherit;
-    text-decoration: none;
+    display:block;
+    text-decoration: underline;
+}
+
+/**
+ * bBlog content
+ */
+
+.blog-content {
+
 }
 
 /*
@@ -76,26 +117,40 @@ h6, .h6 {
  */
 
 .blog-post {
-    margin-bottom: 60px;
-    background: #fff;
-    padding: 10px;
-    border-radius: 5px;
-    border:solid 1px #dedede;
+    margin:0 0 16px 0;
 }
 
 .blog-post-title {
-    margin-bottom: 5px;
-    font-size: 32px;
+    margin: 16px 16px 0 16px;
+    font-size: 30px;
     text-decoration: underline;
 }
-.blog-post-meta {
-    margin-bottom: 20px;
+
+md-card-content .blog-post-title {
+    margin: 0;
+    text-decoration: none;
+}
+
+md-card-content p.blog-post-meta {
+    margin: 0 0 15px 0;
     color: #999;
 }
 
 .blog-post img {
     max-width:100%;
     max-height:100%;
+}
+
+.blog-meta {
+    margin: 0 0 0 16px;
+}
+
+.blog-meta md-card {
+    margin: 0;
+}
+
+md-card.blog-post md-card-content {
+    padding: 16px 16px 0 16px;
 }
 
 /*
@@ -108,5 +163,5 @@ h6, .h6 {
 }
 
 .markdown h3 {
-    font-size:22px;
+    font-size:20px;
 }

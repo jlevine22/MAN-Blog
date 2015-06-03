@@ -55,7 +55,7 @@ function sort(values, field) {
 }
 
 kve.on('put', function(result) {
-    function addToSortValues(sortBy) {
+    async.each(Object.keys(sorts), function addToSortValues(sortBy) {
         sorts[sortBy] = sorts[sortBy].then(function(values) {
             if (values.indexOf(result.key) != -1) {
                 return values;
@@ -63,8 +63,7 @@ kve.on('put', function(result) {
             values.push(result.key);
             return sort(values, sortBy);
         });
-    }
-    async.each(Object.keys(sorts), addToSortValues);
+    });
 });
 
 kve.on('delete', function(key) {

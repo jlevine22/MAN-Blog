@@ -6,7 +6,10 @@ require.config({
         'ui-router': '/bower_components/angular-ui-router/release/angular-ui-router',
         'moment': '/bower_components/moment/min/moment.min',
         'angulartics': '/bower_components/angulartics/dist/angulartics.min',
-        'angulartics-ga': '/bower_components/angulartics/dist/angulartics-ga.min'
+        'angulartics-ga': '/bower_components/angulartics/dist/angulartics-ga.min',
+        'angular-material': '/bower_components/angular-material/angular-material.min',
+        'angular-aria': '/bower_components/angular-aria/angular-aria.min',
+        'angular-animate': '/bower_components/angular-animate/angular-animate.min'
     },
     shim: {
         'ui-router': {
@@ -24,13 +27,21 @@ require.config({
         },
         'angulartics-ga': {
             deps:['angulartics']
+        },
+        'angular-material': {
+            deps: ['angular','angular-aria', 'angular-animate']
+        },
+        'angular-aria': {
+            deps: ['angular']
+        },
+        'angular-animate': {
+            deps: ['angular']
         }
-
     }
 });
 
-require(['angular','ui-router','moment','angulartics','angulartics-ga'], function (angular, uiRouter, moment) {
-    var MANBlog = angular.module('MANBlog', ['ui.router','angulartics','angulartics.google.analytics']);
+require(['angular','ui-router','moment','angulartics','angulartics-ga', 'angular-material'], function (angular, uiRouter, moment) {
+    var MANBlog = angular.module('MANBlog', ['ui.router','angulartics','angulartics.google.analytics', 'ngMaterial']);
     MANBlog.config(function($urlRouterProvider, $locationProvider) {
         console.log('configging');
         //

@@ -7,14 +7,13 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Random thoughts from Josh Levine</title>
+    <title>Random thoughts from the mind of Josh Levine</title>
 
-    <!-- Bootstrap core CSS -->
-    <link href="/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/bower_components/angular-material/angular-material.min.css" rel="stylesheet">
+    <link href="/bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet">
 
     <!-- Custom styles for this template -->
     <link href="/blog/blog.css" rel="stylesheet">
-
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -25,15 +24,19 @@
 
 <body>
 
-<div class="blog-title-container">
-    <div class="container blog-title">
-        <h1><a href="/">Random thoughts from a random guy</a></h1>
+<md-content>
+    <div class="blog-title-container">
+        <div class="blog-title container" flex>
+            <a href="/">
+                <h1>Random Thoughts</h1>
+                <h4>by Josh Levine</h4>
+            </a>
+        </div>
     </div>
-</div>
-
-<div class="blog-main-container" ui-view>
-    <div style="text-align:center;"><img src="/blog/ajax-loader.gif" /></div>
-</div>
+    <div class="blog-content" flex ui-view layout-sm="column" layout-gt-sm="row">
+        <div style="text-align:center;" class="container"><img src="/blog/ajax-loader.gif" /></div>
+    </div>
+</md-content>
 
 
 <!-- Bootstrap core JavaScript
