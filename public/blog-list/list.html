@@ -3,11 +3,12 @@
         <md-card ng-repeat="post in posts" class="blog-post">
             <!-- <img ng-src="{{imagePath}}" class="md-card-image" alt="Washed Out"> -->
             <h2 class="blog-post-title"><a href="/p/{{ post.slug }}">{{post.title}}</a></h2>
+            <h5 class="blog-post-date">posted {{ post.date | blogPostDate }}</h5>
             <md-card-content>
                 <div ng-include="'/cache/' + post.slug + (post.summary ? '.summary.html' : '.html')" class="markdown"></div>
             </md-card-content>
             <div class="md-actions" layout="row" layout-align="end center">
-            <md-button ng-if="post.summary">Read More <i class="fa fa-angle-right"></i></md-button>
+            <md-button ng-if="post.summary" ng-click="goTo('/p/' + post.slug)">Read More <i class="fa fa-angle-right"></i></md-button>
             </div>
         </md-card>
         <div ng-if="loaded && posts.length == 0">No posts</div>
