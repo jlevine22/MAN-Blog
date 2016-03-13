@@ -7,8 +7,11 @@ let chokidar = require('chokidar');
 let kvstore = require('./kvstore');
 let koa = require('koa');
 let route = require('koa-route');
+let serve = require('koa-static');
+let mount = require('koa-mount');
 let listPosts = require('./routes/list-posts');
 let getPostBySlug = require('./routes/get-post-by-slug');
+let listTags = require('./routes/list-tags');
 
 /**
  * Setup our app
@@ -32,89 +35,32 @@ let app = koa();
  */
 app.use(route.get('/posts', listPosts));
 app.use(route.get('/posts/:slug', getPostBySlug));
-
-//app.get('/tags', function(req, res) {
-//  var tags = [];
-//
-//  kvstore.index('tags').then(function(tagsIndex) {
-//    // Add the tags to the tags array so they can be sorted
-//    function tagsIndexIterator(tag, callback) {
-//      tags.push({ name: tag, count: tagsIndex[tag].length });
-//      callback();
-//    }
-//    // Sort the tags by count
-//    function tagsIndexIteratorComplete() {
-//      async.sortBy(tags, function(tag, callback) {
-//        callback(null, -tag.count);
-//      }, function(err, sortedTags) {
-//        res.send(sortedTags);
-//      });
-//    }
-//    // Run the iterator
-//    async.each(Object.keys(tagsIndex), tagsIndexIterator, tagsIndexIteratorComplete);
-//  });
-//});
-
-/**
- * Github auto-update route
- */
-//app.post('/github', bodyParser.json(), function (req, res) {
-//  res.send('OK');
-//
-//  if (!config.githubPushUpdateEnabled) {
-//    return;
-//  }
-//
-//  var crypto = require('crypto');
-//  var hash = crypto.createHmac('sha1', config.githubPushSecret).update(JSON.stringify(req.body)).digest('hex');
-//
-//  if ('sha1=' + hash != req.get('X-Hub-Signature')) {
-//    return;
-//  }
-//
-//  var rootPath = fs.realpathSync(__dirname + '/../');
-//
-//  var exec = function (cmd) {
-//    console.log('execing command: %s', cmd);
-//    return new Promise(function (resolve, reject) {
-//      require('child_process').exec(cmd, function (error, stdout, stderr) {
-//        if (error) return reject(error);
-//        resolve([stdout, stderr]);
-//      });
-//    });
-//  };
-//
-//  var cwd = process.cwd();
-//  process.chdir(rootPath);
-//  exec('git pull').spread(function (stdout, stderr) {
-//    return exec('npm install');
-//  }).spread(function (stdout, stderr) {
-//    process.exit();
-//  }).finally(function () {
-//    process.chdir(cwd);
-//  });
-//});
+app.use(route.get('/tags', listTags));
 
 /**
  * Static file serving
  */
 
+function *serveIndexFile() {
+  this.body = yield new Promsie((resolve, reject) => {
+    fs.readFile(fs.realpathSync(__dirname + '/../public/index.html'), (err, data) => {
+      if (err) return reject(err);
+      resolve(data);
+    });
+  });
+}
+
 // Serve static assets
-//app.use(express.static(__dirname + '/../public'));
+app.use(serve(__dirname + '/../public'));
 
 // Serve the index file if the slug url is used
-//app.get('/p/*', function (req, res) {
-//  res.sendFile(fs.realpathSync(__dirname + '/../public/index.html'));
-//});
+app.use(route.get('/p/*', serveIndexFile));
 
 // Serve cached files
-//app.use('/cache', express.static(config.cacheDirectory));
+app.use(mount('/cache', serve(config.cacheDirectory)));
 
 // Fallback, serve the index file
-//app.use(function (req, res) {
-//  res.send(fs.readFileSync(__dirname + '/../public/index.html').toString());
-//});
-
+app.use(serveIndexFile);
 
 // Build the database, watch the posts directory for changes, and start listening for connections
 chokidar.watch(config.postsDirectory, {})
