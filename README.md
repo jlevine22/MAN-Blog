@@ -1,5 +1,7 @@
 # MAN Blog
 
+[![Circle CI](https://circleci.com/gh/jlevine22/MAN-Blog.svg?style=svg)](https://circleci.com/gh/jlevine22/MAN-Blog)
+
 **A manly blogging platform built with:**
 - Markdown
 - Angular

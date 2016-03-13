@@ -4,14 +4,14 @@ module.exports = {
      * @param data {String}
      * @returns {Array}
      */
-	splitYaml: function (data) {
-		if (data.slice(0, 3) !== '---') return [null, data];
+    splitYaml: function (data) {
+        if (data.slice(0, 3) !== '---') return [null, data];
 
-		var matcher = /\n(\.{3}|-{3})/g;
-		var metaEnd = matcher.exec(data);
+        var matcher = /\n(\.{3}|-{3})/g;
+        var metaEnd = matcher.exec(data);
 
-		return metaEnd && [data.slice(0, metaEnd.index), data.slice(matcher.lastIndex)];
-	},
+        return metaEnd && [data.slice(0, metaEnd.index), data.slice(matcher.lastIndex)];
+    },
     /**
      * Splits a markdown string by a ;;; delimiter. Returns an array containing the two
      * halves of the string.
