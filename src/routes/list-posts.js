@@ -1,6 +1,8 @@
 'use strict';
 let kvstore = require('../kvstore');
 let async  = require('async');
+let util = require('util');
+let _ = require('lodash');
 
 module.exports =  function *listPosts(next) {
   var page = this.query.p || 1;
@@ -12,26 +14,23 @@ module.exports =  function *listPosts(next) {
 
   if (this.query.t) {
     let tags = util.isArray(this.query.t) ? this.query.t : [this.query.t];
-    var tagIndexes = [];
-    tags.forEach(function(tag) {
-      tagIndexes.push(kvstore.index('tags', tag));
-    });
-    let tagKeys = yield Promise.all(tagIndexes);
+    tags = tags.map(tag => kvstore.index('tags', tag));
+    let tagKeys = yield Promise.all(tags);
     tagKeys.forEach(function(key) {
       keys = _.intersection(keys, key);
     });
   }
 
   if (this.query.q) {
-    keys = yield new Promise(function (resolve) {
-      async.filter(keys, function queryIterator(key, callback) {
+    keys = yield new Promise(resolve => {
+      async.filter(keys, (key, callback) => {
         var value = kvstore.store.get(key);
         if (!value || !value.title || typeof value.title != 'string') {
           return callback(false);
         }
         var regexp = new RegExp(this.query.q, 'i');
         callback(value.title.match(regexp));
-      }, function filteredResults(results) {
+      }, results => {
         resolve(results);
       });
     });
