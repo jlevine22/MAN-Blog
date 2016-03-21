@@ -16,16 +16,12 @@ let listTags = require('./routes/list-tags');
 /**
  * Setup our app
  */
-let config = _.merge(
-  {
-    postsDirectory: fs.realpathSync(__dirname + '/../posts'),
-    cacheDirectory: fs.realpathSync(__dirname + '/../cache'),
-    githubPushUpdateEnabled: false,
-    port: 3000,
-    host: 'localhost'
-  },
-  require('../man.json') || {}
-);
+let config = {
+  postsDirectory: process.env.POSTS_DIRECTORY || '/posts',
+  cacheDirectory: process.env.CACHE_DIRECTORY || '/cache',
+  port: process.env.PORT || 3000,
+  host: process.env.HOST || 'localhost'
+};
 
 // Create app
 let app = koa();
@@ -42,7 +38,7 @@ app.use(route.get('/tags', listTags));
  */
 
 function *serveIndexFile() {
-  this.body = yield new Promsie((resolve, reject) => {
+  this.body = yield new Promise((resolve, reject) => {
     fs.readFile(fs.realpathSync(__dirname + '/../public/index.html'), (err, data) => {
       if (err) return reject(err);
       resolve(data);
@@ -89,3 +85,5 @@ chokidar.watch(config.postsDirectory, {})
   });
 
 app.listen(config.port);
+
+console.log('app listening on port', config.port);

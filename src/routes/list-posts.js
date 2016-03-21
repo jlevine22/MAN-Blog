@@ -1,6 +1,8 @@
 'use strict';
 let kvstore = require('../kvstore');
 let async  = require('async');
+let util = require('util');
+let _ = require('lodash');
 
 module.exports =  function *listPosts(next) {
   var page = this.query.p || 1;
