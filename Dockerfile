@@ -2,7 +2,7 @@ FROM node:5.8
 
 # Install app dependencies
 COPY . /src
-RUN cd /src; npm install --production
+RUN cd /src; npm install
 
 # Bundle app source
 #COPY ./src /man-blog/src
