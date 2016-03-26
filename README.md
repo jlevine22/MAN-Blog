@@ -7,40 +7,42 @@
 - Angular
 - Node
 
+MAN Blog is also designed to be run in a Docker container.
+
 ## Gulp Commands
 
-```gulp serve```
-Serve the site for development.
+```gulp build```
+Builds a docker container for the app.
+
+```gulp run```
+Runs the docker container created from `gulp build`
+
+```gulp test```
+Runs the tests locally (not in the docker container)
 
 ```gulp new-post```
 Create a skeleton blog post file. A series of guided prompts will help you create a new blog post file.
 
 ## Configuration
-MAN Blog is designed to run with no further configuration. You will probably want to change some of the default settings though. MAN Blog is configured via a file called 'man.json' in the root directory of the project. You only need to set values you want to change the defaults for.
+MAN Blog is designed to run with no further configuration. You will probably want to change some of the default 
+settings though. MAN Blog can be configured using environment variables.
 
 ### Supported Values
-- ```postsDirectory``` - Path where post files are stored. Defaults to the /posts directory in the project root.
-- ```cacheDirectory``` - Path where post files are rendered as html and cached. Defaults to the /cache directory in the project root.
-- ```githubPushUpdateEnabled``` - Enables the /github route for handling Github webhooks to pull new code when there are updates. Defaults to ```false```
-- ```githubPushSecret``` - The secret key for the github webhook. Defaults to ```null```
-- ```defaultAuthor``` - Sets a default value for the author field when running through the ```gulp new-post``` prompts. Defaults to ```null``` but the skeleton post generator will use 'Anonymous' if no default is set.
-- ```port``` - The port to listen on. Defaults to 3000
-- ```host``` - The host to bind to. Defaults to localhost
+- ```POSTS_DIRECTORY``` - (default: `/posts`) Path where post files are stored.
+- ```CACHE_DIRECTORY``` - (default: `/cache`) Path where post files are rendered as html and cached.
+- ```PORT``` - (default: `3000`) The port to listen on.
+- ```HOST``` - (default: `localhost`) The host to bind to.
 
+Typically you will not need to change any of these. For the posts and cache directory, you can mount these paths from
+the local host to the docker container when you run it.
 
-### Example man.json file
+## Running the app in docker
 
-````
-{
-	"postsDirectory": "/path/to/posts",
-	"defaultAuthor": "Malcolm Reynolds",
-	"githubPushUpdateEnabled: true,
-	"githubPushSecret": "secret password",
-	"serveStatic": true,
-	"port": 3000,
-	"host": "localhost"
-}
-````
+The app can be run with a command that looks similar to this:
+
+```
+$ docker run --name man-blog -d -p 3000:3000 -v /path/to/posts:/posts -v /path/to/cache:/cache man-blog node /src/src/app.js
+```
 
 ## Using Nginx to serve the app 
 Create a vhost config file.
