@@ -2,9 +2,50 @@ var gulp = require('gulp');
 var gutil = require('gulp-util');
 var Promise = require('bluebird');
 var mocha = require('gulp-mocha');
+const spawn = require('child_process').spawn;
 
-gulp.task('default', function () {
-  // do stuff
+const containerName = 'man-blog-web';
+
+function dockerCommand(command, done) {
+  command.stdout.on('data', data => {
+    console.log(`stdout: ${data.toString().replace("\n",'')}`);
+  });
+  command.stderr.on('data', data => {
+    console.error(`stderr: ${data.toString().replace("\n",'')}`);
+  });
+  command.on('close', code => {
+    console.log(`child process exited with code ${code}`);
+    done();
+  });
+}
+
+gulp.task('build', function(done) {
+  const build = spawn('docker', ['build','-t','man-blog','.']);
+  dockerCommand(build, done);
+});
+
+gulp.task('run', ['stop'], function(done) {
+  const run = spawn('docker', [
+    'run',
+    '--rm',
+    '-v','/cache',
+    '-v','/Users/joshlevine/Dropbox/Manly Blog Posts:/posts',
+    '-v',__dirname + ':/src',
+    '-p','3000:3000',
+    '--name', containerName,
+    'man-blog',
+    'node',
+    '/src/src/app.js'
+  ]);
+  dockerCommand(run, done);
+});
+
+gulp.task('stop', function(done) {
+  const stop = spawn('docker', [
+    'stop',
+    containerName
+  ]);
+  dockerCommand(stop, done);
 });
 
 gulp.task('serve', function () {
