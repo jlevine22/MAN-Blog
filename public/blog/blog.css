@@ -173,3 +173,10 @@ md-card.blog-post md-card-content {
 .markdown h3 {
     font-size:20px;
 }
+
+.markdown code {
+    border:solid 1px #ddd;
+    display:block;
+    padding:8px;
+    background:#fafafa
+}
